@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>View Booking</title>
+        <link
+            rel="stylesheet"
+            href="../../lib/font-awesome/fontawesome-free-5.15.1-web/css/all.css"
+        />
+        <link rel="stylesheet" href="../../CSS/style.css" />
+       
+        <link rel="stylesheet" href="../../CSS/popup.css" />
+        <link rel="stylesheet" href="../../CSS/dialog.css">
+        <script>
+            save=()=>{
+                let room = document.getElementById("f1").value; 
+                let type = document.getElementById("f2").value;  
+                let status =document.getElementById("f3").value; 
+                let data={
+                    id_room:room,
+                    type : type,
+                    status: status
+                }
+                let url = "http://localhost:8000/api/room";
+                myHeaders = new Headers();
+                let authToken =localStorage.getItem("token");
+                myHeaders = new Headers();
+                myHeaders.append('Content-Type', 'application/json');
+                myHeaders.append('Authorization', authToken);
+                myHeaders.append('Accept', '*/*');
+                fetch(url, {
+                    method: 'post',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    body:JSON.stringify(data)
+                })
+                .then(response=>response.json() ) //Chuyen response ve dinh dang de co the doc duoc data: https://stackoverflow.com/questions/54656223/fetch-function-return-promise-pending/54656340
+                .then(data => {
+                    console.log(data)
+                    location.reload();
+                })
+                .catch(err => {
+                    alert("Chỉnh sửa thông tin thất bại!!")
+                    console.log(err);
+                    location.reload();
+                    }                    
+                )    
+                return false;                         
+            }
+            openConfirmBox=(row)=>{
+                if (window.confirm("Do you really want to delete this room?")) {
+                    let table=document.getElementById("all_room");
+                    let rows =table.getElementsByTagName("tr");   
+                    let selectedRow=rows[row+1]; 
+                    let room = selectedRow.cells[0].innerHTML;
+                    let body = {
+                        id_room:room
+                    }
+                    //goi api
+                    let url = "http://localhost:8000/api/room";
+                    myHeaders = new Headers();
+                    let authToken =localStorage.getItem("token");
+                    myHeaders = new Headers();
+                    myHeaders.append('Content-Type', 'application/json');
+                    myHeaders.append('Authorization', authToken);
+                    myHeaders.append('Accept', '*/*');
+            
+                    fetch(url, {
+                        method: 'delete',
+                        headers: myHeaders,
+                        mode: 'cors',
+                        cache: 'default',
+                        body: JSON.stringify(body)
+                    })
+                    .then(response=>response.json() ) //Chuyen response ve dinh dang de co the doc duoc data: https://stackoverflow.com/questions/54656223/fetch-function-return-promise-pending/54656340
+                    .then(data => {
+                        if(data){
+                            location.reload();
+                        }
+                    })
+                    .catch(err => {
+                        err.json();
+                        console.log(err);
+                    }                        
+                    )      
+                }
+               
+            }
+            fetchDataIntoTable=(data1)=>{
+                let data=data1;
+                let table = document.getElementById("all_room");
+                for(let i=0;i<data.length;i++){
+                    let row =table.insertRow(i+1);
+                    let cellRoom=row.insertCell(0);
+                    let cellType=row.insertCell(1);
+                    let cellStatus=row.insertCell(2);
+                    let cellAction =row.insertCell(3)
+                    cellRoom.innerHTML=data[i].id_room;
+                    cellType.innerHTML=(data[i].name);
+                    cellStatus.innerHTML =data[i].status_room;
+                    cellAction.insertAdjacentHTML("beforeend",'<i class="fa fa-list" style="padding-right:5px;" aria-hidden="true" ></i>');
+                    cellAction.insertAdjacentHTML("beforeend",'<i class="fa fa-edit" style="padding-right:5px;"  onclick ="handleModal('+i+')" ></i>');
+                    cellAction.insertAdjacentHTML("beforeend",'<i class="fa fa-trash" onclick="openConfirmBox('+i+')" ></i>');
+                }
+            }
+
+            getData=()=>{
+                document.getElementById("user-name").innerHTML=localStorage.getItem("name");
+                document.getElementById("user-name1").innerHTML=localStorage.getItem("name");
+                if(localStorage.getItem("role")>"1"){
+                    document.getElementById("position").innerHTML="Employee";
+                    
+                    document.getElementById("admin").remove();
+                    document.getElementById("admin1").remove();
+                }
+                let url = "http://localhost:8000/api/roomList";
+                let authToken =localStorage.getItem("token");
+                myHeaders = new Headers();
+                myHeaders.append('Content-Type', 'application/json');
+                myHeaders.append('Authorization', authToken);
+                myHeaders.append('Accept', '*/*');
+                fetch(url, {
+                    method: 'get',
+                    mode: 'cors',
+                    cache: 'default',
+                    headers: myHeaders,
+                })
+                // .then(data => data.json())
+                .then(response=>response.json() ) //Chuyen response ve dinh dang de co the doc duoc data: https://stackoverflow.com/questions/54656223/fetch-function-return-promise-pending/54656340
+                .then(data1 => {
+                    fetchDataIntoTable(data1);
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
+            }
+        </script>
+    </head>
+    <body onload="getData()">
+
+        <div id="myNav" class="overlay">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"
+                >&times;</a
+            >
+            <div class="overlay-content">
+                <a href="viewBooking.html">View Booking</a>
+                <a href="newBooking.html">New Booking</a>
+                <a href="editBooking.html">Edit Booking</a>
+
+                <a href="../Room/viewRoom.html">View Room</a>
+                <a href="../Room/newRoom.html">New Room</a>
+                <a href="../Room/editRoom.html">Edit Room</a>
+
+                <a href="../Staff/viewStaff.html">View Staff</a>
+                <a href="../Staff/newStaff.html">New Staff</a>
+                <a href="../Staff/editStaff.html">Edit Staff</a>
+            </div>
+        </div>
+
+
+
+        <div id="page-wrapper">
+            <div class="page-header">
+                <div class="page-logo">
+                    <img src="../../Img/logo.png" alt="logo" />
+                    <span>HVC</span>
+                </div>
+
+                <div class="bars menu-togger sidebar-togger">
+                    <i class="fas fa-bars" onclick="openNav()"></i>
+                </div>
+                <form class="search-form">
+                    <input type="text" placeholder="Search..." name="query" />
+                </form>
+                <div class="top-menu">
+                    <ul class="list-top">
+                        <li class="noti">
+                            <i class="far fa-bell"></i>
+                        </li>
+                        <li class="messages">
+                            <i class="far fa-envelope"></i>
+                        </li>
+                        <li class="user">
+                            <img src="../../Img/dp.jpg" alt="anh" />
+                            <span id="user-name1"></span>
+                            <i class="fas fa-caret-down dropdown-btn"></i>
+
+                            <button>
+                                <a href="../login.html">Đăng xuất</a>
+                            </button>
+                        </li>
+
+                        <li class="setting">
+                            <i class="fas fa-cog"></i>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="header-inner"></div>
+            <div class="page-container">
+                <div class="menu-left">
+                    <div class="user-panel">
+                        <div class="user-pic">
+                            <img src="../../Img/dp.jpg" alt="user-pic" />
+                        </div>
+                        <div class="user-name" id="user-name"></div>
+                        <div class="user-job" id="position">Manager</div>
+                        <div class="user-extend">
+                            <i class="far fa-user"></i>
+                            <i class="far fa-envelope"></i>
+                            <i class="far fa-comments"></i>
+                            <i class="fas fa-sign-out-alt"></i>
+                        </div>
+                    </div>
+
+                    <div class="menu-heading">
+                        <span> -- Main</span>
+                    </div>
+
+                    <div class="list-menu">
+                        <a href="../index.html" class="list-parent">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Accomodation Infor</span>
+                        </a>
+
+                        <li class="list-parent dropdown-btn">
+                            <i class="fas fa-life-ring left"></i>
+                            <span>Books</span>
+                            <i class="fas fa-caret-down down"></i>
+                        </li>
+
+                        <div class="dropdown-container">
+                            <a href="../Booking/viewBooking.html">Booking Management</a>
+                            <a href="../Booking/newBooking.html">New Booking</a>
+                        </div>
+
+                        <li class="list-parent dropdown-btn">
+                            <i class="fas fa-hospital-alt"></i>
+                            <span>Rooms</span>
+                            <i class="fas fa-caret-down"></i>
+                        </li>
+
+                        <div class="dropdown-container">
+                            <a href="../Room/viewRoom.html">View Room</a>
+                        </div>
+
+                        
+                        <li class="list-parent dropdown-btn" >
+                            <i class="fas fa-users"></i>
+                            <span>Type Room</span>
+                            <i class="fas fa-caret-down"></i>
+                        </li>
+
+                        <div class="dropdown-container">
+                            <a href="../TypeRoom/typeRoom.html">View Type</a>
+
+                        </div>
+
+                        <li class="list-parent dropdown-btn" id="admin1">
+                            <i class="fas fa-users"></i>
+                            <span>Staff</span>
+                            <i class="fas fa-caret-down"></i>
+                        </li>
+
+                        <div class="dropdown-container" id="admin">
+                            <a href="../Staff/viewStaff.html">View Staff</a>
+                            <a href="../Staff/newStaff.html">New Staff</a>
+                            <a href="../Staff/editStaff.html">Edit Staff</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="page-content">
+                    <div class="page-bar">
+                        <div class="page-title">All Booking</div>
+                    </div>
+                    <div class="car-box">
+                        <div class="type-view">
+                            <a onclick="handleModal()" class="nav-show-list">Add Room</a>
+                        </div>
+                    </div>
+
+                    <div class="table-content">
+                        <div class="card-header">
+                            <div class="left-card">
+                                <form action="">
+                                    <label for="length_staff">show</label>
+                                    <select
+                                        name="length_staff"
+                                        id="length_staff"
+                                    >
+                                        <option value="5">5</option>
+                                        <option value="10">10</option>
+                                        <option value="15">15</option>
+                                        <option value="20">20</option>
+                                        <option value="25">25</option>
+                                        <option value="30">30</option>
+                                    </select>
+                                </form>
+                            </div>
+
+                            <div class="right-card">
+                                <form action="">
+                                    <label for="search_staff">Search</label>
+                                    <input type="text" class="search-staff" />
+                                </form>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <table id="all_room" class="styled-table">
+                                <tr>
+                                    <th>Room</th>
+                                    <th>Type</th>
+                                    <th>Status</th>  
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="myModalDetail" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Add Room</h2>
+                    <div class="info-content">                        
+                        <div class="left-container">
+                            <form onsubmit="save()">
+                                <ul class="form-style-1">
+                                    <li><label>Room Name<span class="required">*</span></label><input type="text" name="field1" class="field-divided" placeholder="Name" id="f1" /> </li>                                    
+                                    <li><label for="length_staff" >Type Room<span class="required">*</span></label>
+                                        <select
+                                            name="length_staff"
+                                            id="f2"
+                                        >
+                                            <option value="1">Standard</option>
+                                            <option value="2">Superior</option>
+                                            <option value="3">Deluxe</option>
+                                            <option value="4">Suite</option>
+                                        </select>
+                                    </li>
+                                    <li><label>Status<span class="required">*</span></label><input type="text" name="field2" class="field-divided" placeholder="Status" id="f3" /></li>
+                                    <li style="float: right; padding-top: 15px;">
+                                        <input type="submit" value="Save" />
+                                    </li>
+                                </ul>
+                            </form>
+                        </div>
+                        
+            </div>
+            <div class="page-footer"></div>
+            <script src="../../Script/scripts.js"></script>
+            <script>
+                 document.getElementById('all_room') 
+                    .addEventListener('click', function (item) { 
+
+                        
+                        // To get tr tag  
+                        // In the row where we click 
+                        var row = item.path[1]; 
+                        var row_value = "";                         
+          
+                        // Toggle the highlight 
+                        if (row.classList.contains('hidden-select-row')) 
+                            row.classList.remove('hidden-select-row'); 
+                        else 
+                            row.classList.add('hidden-select-row'); 
+
+                        
+                    }); 
+                
+                handleModal=()=>{
+                    var span = document.getElementsByClassName("close")[0];
+                    span.onclick = function () {
+                        modal.style.display = "none";
+                    };
+                    var modal = document.getElementById("myModalDetail");
+                    console.log(modal.style.display);
+                    if(modal.style.display==="block"){
+                        modal.style.display = "none";
+                    }
+                    else if(modal.style.display===""){
+                        modal.style.display = "block";
+                    }
+                    else if(modal.style.display==="none"){
+                        modal.style.display = "block";
+                    }
+                }
+            </script>
+        </div>
+    </body>
+</html>
