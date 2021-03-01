@@ -10,7 +10,8 @@
         />
         <link rel="stylesheet" href="../../CSS/style.css" />
        
-        <link rel="stylesheet" href="../../CSS/popup.css" />
+        <link rel="stylesheet" href="../../CSS/popup.css" />        
+
         <link rel="stylesheet" href="../../CSS/dialog.css">
         <script>
             save=()=>{
@@ -112,8 +113,11 @@
                 if(localStorage.getItem("role")>"1"){
                     document.getElementById("position").innerHTML="Employee";
                     
-                    document.getElementById("admin").remove();
+                    //document.getElementById("admin").remove();
                     document.getElementById("admin1").remove();
+                    document.getElementById("room").remove();
+                    document.getElementById("room1").remove();
+                    document.getElementById("room2").remove();
                 }
                 let url = "http://localhost:8000/api/roomList";
                 let authToken =localStorage.getItem("token");
@@ -222,7 +226,7 @@
                     <div class="list-menu">
                         <a href="../index.html" class="list-parent">
                             <i class="fas fa-tachometer-alt"></i>
-                            <span>Accomodation Infor</span>
+                            <span>Check out</span>
                         </a>
 
                         <li class="list-parent dropdown-btn">
@@ -242,18 +246,18 @@
                             <i class="fas fa-caret-down"></i>
                         </li>
 
-                        <div class="dropdown-container">
+                        <div class="dropdown-container" id="room1">
                             <a href="../Room/viewRoom.html">View Room</a>
                         </div>
 
                         
-                        <li class="list-parent dropdown-btn" >
+                        <li class="list-parent dropdown-btn" id="room2">
                             <i class="fas fa-users"></i>
                             <span>Type Room</span>
                             <i class="fas fa-caret-down"></i>
                         </li>
 
-                        <div class="dropdown-container">
+                        <div class="dropdown-container" id="room">
                             <a href="../TypeRoom/typeRoom.html">View Type</a>
 
                         </div>
@@ -266,8 +270,7 @@
 
                         <div class="dropdown-container" id="admin">
                             <a href="../Staff/viewStaff.html">View Staff</a>
-                            <a href="../Staff/newStaff.html">New Staff</a>
-                            <a href="../Staff/editStaff.html">Edit Staff</a>
+
                         </div>
                     </div>
                 </div>

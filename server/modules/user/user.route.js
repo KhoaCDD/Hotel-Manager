@@ -7,4 +7,6 @@ module.exports = function(router) {
     router.route('/login')
         .post(userRepository.find);
     router.get('/staff', userRepository.get);
+    router.delete('/staff',userRepository.delete);
+    router.post('/staff', userRepository.post)
 }

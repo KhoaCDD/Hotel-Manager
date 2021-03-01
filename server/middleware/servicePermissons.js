@@ -21,10 +21,12 @@ const data =
     //user
     { path: '/api/login', method: 'POST', roles: [0,1,2] },
     { path: '/api/staff', method: 'GET', roles: [0,1] },
+    { path: '/api/staff', method: 'DELETE', roles: [0,1] },
+    { path: '/api/staff', method: 'POST', roles: [0,1] },
     
     //room
     { path: '/api/room', method: 'GET', roles: [0,1,2] },
-    { path: '/api/roomList', method: 'GET', roles: [0,1,2] },
+    { path: '/api/roomList', method: 'GET', roles: [0,1] },
     { path: '/api/room', method: 'POST', roles: [0,1] },
     { path: '/api/room', method: 'DELETE', roles: [0,1] },
 
@@ -35,6 +37,6 @@ const data =
     { path: '/api/book', method: 'DELETE', roles: [0,1,2] },
 
     //type room
-    { path: '/api/typeroom', method: 'GET', roles: [0,1] },
+    { path: '/api/typeroom', method: 'GET', roles: [0,1,2] },
 
 ]

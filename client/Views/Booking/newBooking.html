@@ -182,8 +182,7 @@
                     document.getElementById("user-name").innerHTML=localStorage.getItem("name");
                     document.getElementById("user-name1").innerHTML=localStorage.getItem("name");
                 if(localStorage.getItem("role")>"1"){
-                    document.getElementById("admin").remove();
-                    document.getElementById("admin1").remove();
+                   
                 }
                 resetTable();
                 let numPage=parseInt(rawData.totalPage);
@@ -220,9 +219,12 @@
             }     
             signOut=()=>{
                 localStorage.clear();
-                location.replace("login.html");
+                location.replace("../login.html");
             }
             getData=(page)=>{
+                if(localStorage.getItem("role")!== 2){
+
+                }
                 let type = parseInt(document.getElementById('type-room').value);;
                 let from =document.getElementById('startDate').value;
                 from = (from?from:'2025-12-30');
@@ -344,7 +346,7 @@
                     <div class="list-menu">
                         <a href="../index.html" class="list-parent">
                             <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard</span>
+                            <span>Check out</span>
                         </a>
 
                         <li class="list-parent dropdown-btn">
@@ -366,8 +368,7 @@
 
                         <div class="dropdown-container">
                             <a href="../Room/viewRoom.html">View Room</a>
-                            <a href="../Room/newRoom.html">New Room</a>
-                            <a href="../Room/editRoom.html">Edit Room</a>
+
                         </div>
 
                         

@@ -9,27 +9,139 @@
             href="../../lib/font-awesome/fontawesome-free-5.15.1-web/css/all.css"
         />
 
+
         <link rel="stylesheet" href="../../CSS/style.css" />
+       
+        <link rel="stylesheet" href="../../CSS/popup.css" />        
+
+        <link rel="stylesheet" href="../../CSS/dialog.css">
         <script>
             signOut=()=>{
                 localStorage.clear();
                 location.replace("../login.html");
+            }
+            save=()=>{
+                let username = document.getElementById("f5").value; 
+                let password = document.getElementById("f6").value; 
+                let role =document.getElementById("f7").value; 
+                let fullname = document.getElementById("f1").value; 
+                let dob = document.getElementById("f2").value;  
+                let address =document.getElementById("f3").value; 
+                let phone =document.getElementById("f4").value; 
+                let startDate= new Date(dob);
+                    let d= ('0'+(startDate.getDate(startDate))).slice(-2),
+                        month=('0'+(startDate.getMonth()+1)).slice(-2),
+                        year=startDate.getFullYear();
+                    date=(year+'-'+month+'-'+d);
+                let data={
+                    username:username,
+                    password:password,
+                    role:role,
+                    fullname:fullname,
+                    dob:date,
+                    address,
+                    phone
+                }
+                console.log("f7",role);
+                if(!(parseInt(localStorage.getItem("role")) < parseInt(role))){
+                    alert("Thêm Thông tin thất bại, bạn không thể thêm tài khoản có chức vị này!");
+                    return false;
+                }
+                let url = "http://localhost:8000/api/staff";
+                myHeaders = new Headers();
+                let authToken =localStorage.getItem("token");
+                myHeaders = new Headers();
+                myHeaders.append('Content-Type', 'application/json');
+                myHeaders.append('Authorization', authToken);
+                myHeaders.append('Accept', '*/*');
+                fetch(url, {
+                    method: 'post',
+                    headers: myHeaders,
+                    mode: 'cors',
+                    cache: 'default',
+                    body:JSON.stringify(data)
+                })
+                .then(response=>response.json() ) //Chuyen response ve dinh dang de co the doc duoc data: https://stackoverflow.com/questions/54656223/fetch-function-return-promise-pending/54656340
+                .then(data => {
+                    console.log(data)
+                    location.reload();
+                })
+                .catch(err => {
+                    console.log(err);
+                    alert("Thêm thông tin thất bại!!")
+                    
+                    location.reload();
+                    }                    
+                )    
+                return false;                         
+            }
+            openConfirmBox=(row)=>{
+                if (window.confirm("Do you really want to delete this user?")) {
+                    let table=document.getElementById("all_staff");
+                    let rows =table.getElementsByTagName("tr");   
+                    let selectedRow=rows[row+1]; 
+                    let user = selectedRow.cells[0].innerHTML;
+                    let role= localStorage.getItem("role");
+                    let body = {
+                        id:user,
+                        role: role
+                    }
+                    //goi api
+                    let url = "http://localhost:8000/api/staff";
+                    myHeaders = new Headers();
+                    let authToken =localStorage.getItem("token");
+                    myHeaders = new Headers();
+                    myHeaders.append('Content-Type', 'application/json');
+                    myHeaders.append('Authorization', authToken);
+                    myHeaders.append('Accept', '*/*');
+            
+                    fetch(url, {
+                        method: 'delete',
+                        headers: myHeaders,
+                        mode: 'cors',
+                        cache: 'default',
+                        body: JSON.stringify(body)
+                    })
+                    .then(response=>response.json() ) //Chuyen response ve dinh dang de co the doc duoc data: https://stackoverflow.com/questions/54656223/fetch-function-return-promise-pending/54656340
+                    .then(data => {
+                        if(data){
+                            location.reload();
+                        }
+                    })
+                    .catch(err => {
+                        err.json();
+                        console.log(err);
+                    }                        
+                    )      
+                }
+               
             }
               fetchDataIntoTable=(data1)=>{
                 let data=data1;
                 let table = document.getElementById("all_staff");
                 for(let i=0;i<data.length;i++){
                     let row =table.insertRow(i+1);
-                    let cellCustomerName=row.insertCell(0);
-                    let cellEmail=row.insertCell(1);
-                    let cellPosition=row.insertCell(2);
-                    let cellAction=row.insertCell(3);
-                    cellCustomerName.innerHTML=(data[i].username);
-                    cellEmail.innerHTML=(data[i].username)+"@hotel.com";
-                    cellPosition.innerHTML=((data[i].role==="1")?"Manager":"Employee");
+                    let cellId=row.insertCell(0);
+                    let cellName=row.insertCell(1);
+                    let cellDob=row.insertCell(2);
+                    let cellAddress=row.insertCell(3);
+                    let cellPhone=row.insertCell(4);
+                    let cellPosition=row.insertCell(5);
+                    let cellAction=row.insertCell(6);
+                    cellId.innerHTML=(data[i].id);
+                    cellName.innerHTML=(data[i].fullname);
+                    let startDate= new Date(data[i].dob);
+                    let d= ('0'+(startDate.getDate(startDate))).slice(-2),
+                        month=('0'+(startDate.getMonth()+1)).slice(-2),
+                        year=startDate.getFullYear();
+                    cellDob.innerHTML=(year+'-'+month+'-'+d);
+                    cellAddress.innerHTML=(data[i].address);
+                    cellPhone.innerHTML =(data[i].phone)
+                    cellPosition.innerHTML=((data[i].role!==1)?"Employee":"Manager");
+                    if(data[i].role===0) cellPosition.innerHTML = "root-admin"
                     cellAction.insertAdjacentHTML("beforeend",'<i class="fa fa-list" style="padding-right:5px;" aria-hidden="true" ></i>');
                     cellAction.insertAdjacentHTML("beforeend",'<i class="fa fa-edit" style="padding-right:5px;"  ></i>');
-                    cellAction.insertAdjacentHTML("beforeend",'<i class="fa fa-trash"  ></i>');
+                    cellAction.insertAdjacentHTML("beforeend",'<i class="fa fa-trash"  onclick="openConfirmBox('+i+')"></i>');
                 }
               }
              getData=()=>{
@@ -40,12 +152,14 @@
                     document.getElementById("admin").remove();
                     document.getElementById("admin1").remove();
                 }
-                let url = "http://localhost:8000/api/staff";
+                let role= localStorage.getItem("role");
+                let url = "http://localhost:8000/api/staff?role="+role;
                 let authToken =localStorage.getItem("token");
                 myHeaders = new Headers();
                 myHeaders.append('Content-Type', 'application/json');
                 myHeaders.append('Authorization', authToken);
                 myHeaders.append('Accept', '*/*');
+                
                 fetch(url, {
                     method: 'get',
                     mode: 'cors',
@@ -73,15 +187,11 @@
             <div class="overlay-content">
                 <a href="../Booking/viewBooking.html">View Booking</a>
                 <a href="../Booking/newBooking.html">New Booking</a>
-                <a href="../Booking/editBooking.html">Edit Booking</a>
 
                 <a href="../Room/viewRoom.html">View Room</a>
-                <a href="../Room/newRoom.html">New Room</a>
-                <a href="../Room/editRoom.html">Edit Room</a>
 
                 <a href="viewStaff.html">View Staff</a>
-                <a href="newStaff.html">New Staff</a>
-                <a href="editStaff.html">Edit Staff</a>
+
             </div>
         </div>
 
@@ -146,7 +256,7 @@
                     <div class="list-menu">
                         <a href="../index.html" class="list-parent">
                             <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard</span>
+                            <span>Check out</span>
                         </a>
 
                         <li class="list-parent dropdown-btn">
@@ -171,8 +281,7 @@
 
                         <div class="dropdown-container">
                             <a href="../Room/viewRoom.html">View Room</a>
-                            <a href="../Room/newRoom.html">New Room</a>
-                            <a href="../Room/editRoom.html">Edit Room</a>
+
                         </div>
 
                         <li class="list-parent dropdown-btn" >
@@ -195,8 +304,7 @@
 
                         <div class="dropdown-container">
                             <a id="admin" href="viewStaff.html">View Staff</a>
-                            <a href="newStaff.html">New Staff</a>
-                            <a href="editStaff.html">Edit Staff</a>
+
                         </div>
                     </div>
                 </div>
@@ -206,7 +314,7 @@
                     </div>
                     <div class="car-box">
                         <div class="type-view">
-                            <a href="#" class="nav-show-list">List Staff</a>
+                            <a href="#" class="nav-show-list" id = "open_staff_modal" onclick="handleModal()" >Add Staff</a>
                         </div>
                     </div>
 
@@ -239,8 +347,11 @@
                         <div class="card-body">
                             <table id="all_staff">
                                 <tr>
+                                    <th>ID</th>
                                     <th>Name</th>
-                                    <th>Email</th>
+                                    <th>Date of birth</th>
+                                    <th>Address</th>
+                                    <th>Phone</th>
                                     <th>Position</th>
                                     <th>Action</th>
                                 </tr>
@@ -250,11 +361,89 @@
                             </table>
                         </div>
                     </div>
+                    
                 </div>
             </div>
+            <div id="myModalDetail" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Booking Detail</h2>
+                    <div class="info-content">                        
+                        <div class="left-container">
+                            <form onsubmit="save()"></form>
+                                <ul class="form-style-1">
+                                    
+                                    
+                                    <li>
+                                        <label>Fullname<span class="required">*</span></label>
+                                        <input type="text" name="customerName" class="field-long" id="f1"/>
+                                    </li>
+                                    <li>
+                                        <label>Date of Birth<span class="required">*</span></label>
+                                        <input
+                                            type="date"
+                                            name="dateofbirth"
+                                            id="f2"
+                                        />
+                                    </li>
+                                    <li>
+                                        <label>Address<span class="required">*</span></label>
+                                        <input type="text" name="customerMobile" class="field-long" id="f3"/>
+                                    </li>
+                                    <li><label>Phone<span class="required">*</span></label><input type="text" name="field2" class="field-divided" placeholder="Room" id="f4"/></li>
+                                   
+                                   
+                                </ul>
+                            </form>
+                        </div>
+                        <div class="right-container" style="padding-left: 5px">
+                            <form onsubmit=" return save()">
+                                <ul class="form-style-1">
+                                    <li><label>UserName<span class="required">*</span></label><input type="text" name="field1" class="field-divided" placeholder="Name" id="f5" /> </li>
+                                    <li><label>Password<span class="required">*</span></label><input type="password" name="field2" class="field-divided" placeholder="password" id="f6"></li>
+                                    <li><label>Role<span class="required">*</span></label><select id="f7">
+                                        <option value="1">Manager</option>
+                                        <option value="2">Employee</option>
+
+                                      </select></li>
+                                    
+                                   
+                                    <p id="hidden-start" hidden></p>
+                                    <p id="hidden-end" hidden></p>
+                                    
+                                    <li style="float: right; padding-top: 15px;">
+                                        <input type="submit" value="Save" />
+                                    </li>
+                                </ul>
+                            </form>
+                        </div>
+                        
+            </div>
+
             <div class="page-footer"></div>
 
-            <script src="../../Script/scripts.js"></script>
+            <script src="../../Script/scripts.js">
+            
+            </script>
+            <script>
+                handleModal=()=>{
+                    var span = document.getElementsByClassName("close")[0];
+                    span.onclick = function () {
+                        modal.style.display = "none";
+                    };
+                    var modal = document.getElementById("myModalDetail");
+                    console.log(modal.style.display);
+                    if(modal.style.display==="block"){
+                        modal.style.display = "none";
+                    }
+                    else if(modal.style.display===""){
+                        modal.style.display = "block";
+                    }
+                    else if(modal.style.display==="none"){
+                        modal.style.display = "block";
+                    }
+                }
+            </script>
         </div>
     </body>
 </html>
